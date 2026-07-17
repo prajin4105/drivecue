@@ -25,7 +25,10 @@ return new class extends Migration
     $table->timestamp('created_at')->useCurrent();
 
     $table->index(['user_id', 'created_at']);
-    $table->index(['vehicle_record_id', 'reminder_stage', 'message_type']);
+  $table->index(
+    ['vehicle_record_id', 'reminder_stage', 'message_type'],
+    'reminder_logs_idx'
+);
 });
     }
 
