@@ -71,11 +71,11 @@ new #[Layout('layouts.app')] class extends Component
                         'user_id' => $user->id,
                         'plan_id' => $plan->id,
                         'start_date' => Carbon::today(),
-                        'end_date' => Carbon::today()->addDays((int) env('DEFAULT_TRIAL_DAYS', 30)),
+                        'end_date' => Carbon::today()->addMonth()->subDay(),
                         'status' => 'active',
                         'payment_status' => 'trial',
-                        'billing_cycle' => 'lifetime',
-                        'notes' => 'Free Trial assigned automatically on registration',
+                        'billing_cycle' => 'monthly',
+                        'notes' => 'One-month Free Plan with 100 WhatsApp messages, assigned automatically on registration',
                     ]);
                 }
             }
@@ -83,7 +83,7 @@ new #[Layout('layouts.app')] class extends Component
             // Log user in
             Auth::login($user);
 
-            session()->flash('success', '🎉 Welcome! Your Free Trial is active. Admin will activate full features shortly.');
+            session()->flash('success', '🎉 Welcome! Your Free Plan is active for one month and includes 100 WhatsApp messages.');
             $this->redirect(route('dashboard', absolute: false), navigate: true);
 
         } elseif ($this->purpose === 'forgot_password') {

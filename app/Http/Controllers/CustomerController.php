@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\VehicleRecord;
 use App\Models\User;
 use App\Models\ReminderLog;
+use App\Models\Subscription;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,25 @@ use Illuminate\Support\Facades\Log;
 
 class CustomerController extends Controller
 {
+    private function checkPlanAccess()
+    {
+        $userId = auth()->id();
+        $sub = Subscription::where('user_id', $userId)->where('status', 'active')->orderBy('end_date', 'desc')->first();
+        
+        if ($sub && Carbon::today()->lessThanOrEqualTo(Carbon::parse($sub->end_date))) {
+            return true;
+        }
+
+        $lastSub = Subscription::where('user_id', $userId)->orderBy('end_date', 'desc')->first();
+        if ($lastSub) {
+            $graceEnd = Carbon::parse($lastSub->end_date)->addDays(7);
+            if (Carbon::today()->lessThanOrEqualTo($graceEnd)) {
+                return true; // Inside grace period
+            }
+        }
+        
+        return false;
+    }
     private function normalizeMobile(string $mobile): string
     {
         $clean = preg_replace('/\D/', '', $mobile) ?? '';
@@ -68,13 +88,25 @@ class CustomerController extends Controller
             $query->where('expiry_date', '>', $sevenDays);
         }
 
+        $perPage = (int) $request->input('per_page', 25);
+        if (!in_array($perPage, [25, 50, 75, 100])) {
+            $perPage = 25;
+        }
+
         $records = $query->orderBy('expiry_date', 'asc')
             ->orderBy('id', 'desc')
-            ->paginate(25)
+            ->paginate($perPage)
             ->withQueryString();
 
+        $sentTodayIds = ReminderLog::where('user_id', $userId)
+            ->where('message_type', 'whatsapp')
+            ->where('status', 'sent')
+            ->whereDate('created_at', Carbon::today())
+            ->pluck('vehicle_record_id')
+            ->toArray();
+
         return view('customers.index', compact(
-            'records', 'totalAll', 'totalActive', 'totalExpiring', 'totalExpired', 'q', 'status'
+            'records', 'totalAll', 'totalActive', 'totalExpiring', 'totalExpired', 'q', 'status', 'sentTodayIds'
         ));
     }
 
@@ -93,6 +125,10 @@ class CustomerController extends Controller
 
     public function store(Request $request)
     {
+        if (!$this->checkPlanAccess()) {
+            return redirect()->route('pricing.index')->with('error', 'Your subscription has ended and the 7-day grace period is over. Please renew your plan to add vehicles.');
+        }
+
         $userId = auth()->id();
 
         // Normalize first so validation rules check clean data
@@ -241,6 +277,10 @@ class CustomerController extends Controller
 
     public function import(Request $request)
     {
+        if (!$this->checkPlanAccess()) {
+            return response()->json(['success' => false, 'message' => 'Your subscription has ended and the 7-day grace period is over. Please renew your plan to add vehicles.']);
+        }
+
         $userId = auth()->id();
 
         if (!$request->hasFile('csv_file')) {

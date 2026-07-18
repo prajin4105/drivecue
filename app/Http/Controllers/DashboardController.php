@@ -69,13 +69,26 @@ class DashboardController extends Controller
         $planDaysLeft = -1;
         $isTrial = false;
         $billingCycle = 'monthly';
+        $inGracePeriod = false;
+        $graceEndDate = null;
+        
         if ($sub) {
             $isTrial = (bool) $sub->plan->is_trial;
             $billingCycle = $sub->billing_cycle ?: 'monthly';
-            if ($sub->payment_status === 'trial' || $sub->billing_cycle === 'lifetime') {
+            if ($sub->billing_cycle === 'lifetime') {
                 $planDaysLeft = 99999; // Represents lifetime
             } else {
-                $planDaysLeft = (int) Carbon::today()->diffInDays(Carbon::parse($sub->end_date), false);
+                $planDaysLeft = max(0, Carbon::today()->diffInDays(Carbon::parse($sub->end_date), false));
+            }
+        } else {
+            // Check for grace period
+            $lastSub = \App\Models\Subscription::where('user_id', $uid)->orderBy('end_date', 'desc')->first();
+            if ($lastSub) {
+                $graceEnd = Carbon::parse($lastSub->end_date)->addDays(7);
+                if (Carbon::today()->lessThanOrEqualTo($graceEnd)) {
+                    $inGracePeriod = true;
+                    $graceEndDate = $graceEnd->format('d M Y');
+                }
             }
         }
 
@@ -125,9 +138,18 @@ class DashboardController extends Controller
             ->limit(6)
             ->get();
 
+        // Sent logs for today to exclude from needs
+        $sentTodayIds = ReminderLog::where('user_id', $uid)
+            ->where('message_type', 'whatsapp')
+            ->where('status', 'sent')
+            ->whereDate('created_at', Carbon::today())
+            ->pluck('vehicle_record_id')
+            ->toArray();
+
         // Reminder Needs for modal
         $reminderNeeds = VehicleRecord::where('user_id', $uid)
             ->where('expiry_date', '<=', $next7)
+            ->whereNotIn('id', $sentTodayIds)
             ->orderBy('expiry_date', 'asc')
             ->limit(100)
             ->get();
@@ -174,7 +196,8 @@ class DashboardController extends Controller
             'whatsAppUsagePercent', 'planDaysLeft', 'isTrial', 'billingCycle', 'activePercent',
             'attentionCount', 'monthlyLabels', 'monthlyCounts', 'expiringCounts', 'maxMonthCount',
             'priorityRows', 'recentRecords', 'vehicleTypes', 'reminderNeeds', 'reminderSent',
-            'envWarning', 'focusTitle', 'focusText', 'focusTone', 'customerLimit', 'customerUsagePercent'
+            'envWarning', 'focusTitle', 'focusText', 'focusTone', 'customerLimit', 'customerUsagePercent',
+            'inGracePeriod', 'graceEndDate'
         ));
     }
 
@@ -228,6 +251,29 @@ class DashboardController extends Controller
                         'sent_at' => null,
                     ]);
                     $failed++;
+                    continue;
+                }
+                
+                // Check if already sent today successfully
+                $alreadySentToday = ReminderLog::where('vehicle_record_id', $id)
+                    ->where('message_type', 'whatsapp')
+                    ->where('status', 'sent')
+                    ->whereDate('created_at', Carbon::today())
+                    ->exists();
+
+                if ($alreadySentToday) {
+                    ReminderLog::create([
+                        'user_id' => $userId,
+                        'vehicle_record_id' => $id,
+                        'customer_mobile' => $record->customer_mobile ?? '',
+                        'message_type' => 'whatsapp',
+                        'reminder_stage' => 'manual_dashboard',
+                        'message_body' => 'Skipped — A successful message was already sent today.',
+                        'status' => 'skipped',
+                        'provider_response' => 'Already sent today',
+                        'sent_at' => null,
+                    ]);
+                    $failed++; // Count as failed to alert user, or skipped.
                     continue;
                 }
 

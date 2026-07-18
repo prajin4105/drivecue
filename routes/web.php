@@ -11,6 +11,10 @@ Route::get('/', function () {
 });
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\PricingController;
+use App\Http\Controllers\PaymentController;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 
 Route::get('dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth'])
@@ -19,6 +23,23 @@ Route::get('dashboard', [DashboardController::class, 'index'])
 Route::post('dashboard/bulk-whatsapp', [DashboardController::class, 'bulkWhatsapp'])
     ->middleware(['auth'])
     ->name('dashboard.bulk-whatsapp');
+
+Route::get('reports', [ReportController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('reports.index');
+
+use App\Http\Controllers\WhatsappLogController;
+Route::get('whatsapp-logs', [WhatsappLogController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('whatsapp-logs.index');
+
+Route::get('pricing', [PricingController::class, 'index'])->name('pricing.index');
+Route::middleware('auth')->group(function () {
+    Route::get('checkout/{plan}', [PaymentController::class, 'checkout'])->name('checkout');
+    Route::post('payments/razorpay/order', [PaymentController::class, 'createOrder'])->name('payments.create-order');
+    Route::post('payments/razorpay/verify', [PaymentController::class, 'verify'])->name('payments.verify');
+});
+Route::post('payments/razorpay/webhook', [PaymentController::class, 'webhook'])->withoutMiddleware(VerifyCsrfToken::class)->name('payments.webhook');
 
 use App\Http\Controllers\ProfileController;
 
@@ -44,6 +65,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('customers/{id}/update', [CustomerController::class, 'update'])->name('customers.update');
     Route::post('customers/{id}/delete', [CustomerController::class, 'destroy'])->name('customers.destroy');
     Route::post('customers/import', [CustomerController::class, 'import'])->name('customers.import');
+});
+
+use App\Http\Controllers\BillingController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('billing', [BillingController::class, 'index'])->name('billing.index');
+    Route::get('billing/invoice/{payment}', [BillingController::class, 'invoice'])->name('billing.invoice');
 });
 
 require __DIR__.'/auth.php';

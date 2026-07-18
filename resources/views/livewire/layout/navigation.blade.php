@@ -90,7 +90,7 @@ new class extends Component
         <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
             <div class="px-4">
                 <div class="font-medium text-base text-gray-800 dark:text-gray-200" x-data="{{ json_encode(['name' => auth()->user()->name]) }}" x-text="name" x-on:profile-updated.window="name = $event.detail.name"></div>
-                <div class="font-medium text-sm text-gray-500">{{ auth()->user()->email }}</div>
+                <div class="font-medium text-sm text-gray-500">{{ (str_ends_with(auth()->user()->email, '@drivecue.com') || str_ends_with(auth()->user()->email, '@drive.cue')) ? '' : auth()->user()->email }}</div>
             </div>
 
             <div class="mt-3 space-y-1">

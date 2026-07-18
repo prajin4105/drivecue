@@ -21,7 +21,6 @@ class Plan extends Model
         'monthly_price',
         'yearly_price',
         'customer_limit',
-        'sms_limit',
         'whatsapp_limit',
         'status',
     ];
@@ -33,7 +32,6 @@ class Plan extends Model
         'monthly_price' => 'decimal:2',
         'yearly_price' => 'decimal:2',
         'customer_limit' => 'integer',
-        'sms_limit' => 'integer',
         'whatsapp_limit' => 'integer',
     ];
 

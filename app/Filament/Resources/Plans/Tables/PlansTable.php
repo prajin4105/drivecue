@@ -29,19 +29,17 @@ class PlansTable
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('monthly_price')
-                    ->money()
+                    ->money('inr')
                     ->sortable(),
                 TextColumn::make('yearly_price')
-                    ->money()
+                    ->money('inr')
                     ->sortable(),
                 TextColumn::make('customer_limit')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('sms_limit')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('whatsapp_limit')
-                    ->numeric()
+                    ->label('WhatsApp limit')
+                    ->formatStateUsing(fn ($state): string => (int) $state === 0 ? '∞ Unlimited' : number_format((int) $state))
                     ->sortable(),
                 TextColumn::make('status')
                     ->searchable(),

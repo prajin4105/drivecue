@@ -90,25 +90,7 @@ if (!function_exists('dash_initial')) {
     .ds-alert.info .ds-alert-title { color: var(--blue-dark); }
     .ds-alert-text { font-size: 13px; color: var(--text); font-weight: 500; margin-top: 3px; line-height: 1.5; }
     
-    .ds-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
-    .ds-kpi { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(15,23,42,.07); position: relative; overflow: hidden; transition: box-shadow .16s, transform .14s; }
-    .ds-kpi:hover { box-shadow: 0 10px 24px rgba(15,23,42,.07); transform: translateY(-2px); }
-    .ds-kpi::after { content: ''; position: absolute; inset: 0 auto 0 0; width: 3px; border-radius: 2px 0 0 2px; }
-    .ds-kpi.default::after { background: var(--blue); }
-    .ds-kpi.success::after { background: #22C55E; }
-    .ds-kpi.warning::after { background: #F59E0B; }
-    .ds-kpi.danger::after { background: #EF4444; }
-    
-    .ds-kpi-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
-    .ds-kpi.default .ds-kpi-icon { background: var(--blue-lt); color: var(--blue); }
-    .ds-kpi.success .ds-kpi-icon { background: #F0FDF4; color: #22C55E; }
-    .ds-kpi.warning .ds-kpi-icon { background: #FFFBEB; color: #F59E0B; }
-    .ds-kpi.danger .ds-kpi-icon { background: #FFF1F2; color: #EF4444; }
-    .ds-kpi-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    
-    .ds-kpi-label { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
-    .ds-kpi-value { font-size: 30px; font-weight: 700; letter-spacing: -.04em; line-height: 1; margin-bottom: 6px; color: var(--black); }
-    .ds-kpi-meta { font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.4; }
+
     
     .ds-plan-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
     .ds-plan-card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(15,23,42,.07); }
@@ -273,6 +255,20 @@ if (!function_exists('dash_initial')) {
 
 <div class="ds-wrap">
     <!-- ENV Warning -->
+    
+    @if(isset($inGracePeriod) && $inGracePeriod)
+    <div class="ds-alert warning" style="margin-top:20px; border-color:#F59E0B; background:#FEF3C7; color:#92400E; display:flex; align-items:center; justify-content:space-between; gap:20px;">
+        <div style="display:flex; align-items:flex-start; gap:12px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <div style="font-size:14px; line-height:1.5;">
+                <strong style="display:block; font-size:15px; margin-bottom:4px; color:#92400E;">Your subscription has ended.</strong>
+                You are in the 7-day grace period. You have until <strong>{{ $graceEndDate }}</strong> to renew your plan before you lose access to adding vehicles. WhatsApp reminders will not be sent during this period.
+            </div>
+        </div>
+        <a href="{{ route('pricing.index') }}" style="background:#D97706; color:#fff; text-decoration:none; padding:8px 16px; border-radius:8px; font-weight:700; white-space:nowrap; font-size:14px;">Renew Now</a>
+    </div>
+    @endif
+
     @if ($envWarning)
         <div class="env-warn">⚠️ {{ $envWarning }}</div>
     @endif
@@ -321,30 +317,38 @@ if (!function_exists('dash_initial')) {
     </div>
 
     <!-- KPI Cards -->
-    <div class="ds-kpis">
-        <div class="ds-kpi default">
-            <div class="ds-kpi-icon"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/></svg></div>
-            <div class="ds-kpi-label">Total Records</div>
-            <div class="ds-kpi-value">{{ $totalRecords }}</div>
-            <div class="ds-kpi-meta">{{ $monthAdded }} added this month</div>
+    <div class="psh-kpis">
+        <div class="psh-kpi-card is-primary">
+            <div class="psh-kpi-top">
+                <div class="psh-kpi-icon"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/></svg></div>
+                <div class="psh-kpi-label">Total Records</div>
+            </div>
+            <div class="psh-kpi-value">{{ $totalRecords }}</div>
+            <div class="psh-kpi-meta">{{ $monthAdded }} added this month</div>
         </div>
-        <div class="ds-kpi success">
-            <div class="ds-kpi-icon"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
-            <div class="ds-kpi-label">Active Records</div>
-            <div class="ds-kpi-value">{{ $activeRecords }}</div>
-            <div class="ds-kpi-meta">{{ $activePercent }}% of all records healthy</div>
+        <div class="psh-kpi-card is-success">
+            <div class="psh-kpi-top">
+                <div class="psh-kpi-icon"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+                <div class="psh-kpi-label">Active Records</div>
+            </div>
+            <div class="psh-kpi-value">{{ $activeRecords }}</div>
+            <div class="psh-kpi-meta">{{ $activePercent }}% of all records healthy</div>
         </div>
-        <div class="ds-kpi warning">
-            <div class="ds-kpi-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
-            <div class="ds-kpi-label">Due Soon</div>
-            <div class="ds-kpi-value">{{ $dueToday + $expiring7 }}</div>
-            <div class="ds-kpi-meta">{{ $dueToday }} today · {{ $expiring7 }} next 7 days</div>
+        <div class="psh-kpi-card is-warning">
+            <div class="psh-kpi-top">
+                <div class="psh-kpi-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+                <div class="psh-kpi-label">Due Soon</div>
+            </div>
+            <div class="psh-kpi-value">{{ $dueToday + $expiring7 }}</div>
+            <div class="psh-kpi-meta">{{ $dueToday }} today · {{ $expiring7 }} next 7 days</div>
         </div>
-        <div class="ds-kpi danger">
-            <div class="ds-kpi-icon"><svg viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg></div>
-            <div class="ds-kpi-label">Expired</div>
-            <div class="ds-kpi-value">{{ $expiredRecords }}</div>
-            <div class="ds-kpi-meta">Needs follow-up first</div>
+        <div class="psh-kpi-card is-danger">
+            <div class="psh-kpi-top">
+                <div class="psh-kpi-icon"><svg viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg></div>
+                <div class="psh-kpi-label">Expired</div>
+            </div>
+            <div class="psh-kpi-value">{{ $expiredRecords }}</div>
+            <div class="psh-kpi-meta">Needs follow-up first</div>
         </div>
     </div>
 

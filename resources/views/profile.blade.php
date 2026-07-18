@@ -98,11 +98,17 @@
     .pf-card-body { padding: 20px; }
 
     /* Form */
-    .pf-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .pf-form-group { margin-bottom: 15px; }
-    .pf-form-group:last-child { margin-bottom: 0; }
-    .pf-form-group label { display: block; margin-bottom: 7px; font-size: 12.5px; font-weight: 700; color: var(--text); }
-    .pf-req { color: var(--blue); }
+    .pf-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .pf-form-group { margin-bottom: 20px; }
+    .pf-form-group label { display: block; font-size: 13px; font-weight: 700; color: var(--black); margin-bottom: 8px; }
+    .pf-req { color: #dc2626; margin-left: 2px; }
+    .pf-hint { font-size: 12px; color: var(--muted); margin-top: 6px; font-weight: 500; line-height: 1.4; }
+    
+    .pf-pill-checkbox { cursor: pointer; user-select: none; }
+    .pf-pill-checkbox input { display: none; }
+    .pf-pill-checkbox span { display: inline-flex; align-items: center; justify-content: center; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font-size: 13px; font-weight: 600; color: var(--muted); transition: all .15s ease; }
+    .pf-pill-checkbox input:checked + span { background: var(--blue-lt); border-color: var(--blue); color: var(--blue-dark); box-shadow: 0 2px 8px rgba(37,99,235,.15); }
+
     .pf-input-wrap { position: relative; }
     .pf-input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--muted); pointer-events: none; }
     .pf-input-icon svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: block; }
@@ -268,26 +274,7 @@
 </style>
 
 <div class="pf-wrap">
-    <!-- Flash Messages / Validation Errors -->
-    @if (session()->has('success'))
-        <div class="pf-alert success" role="alert">
-            <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if ($errors->any())
-        <div class="pf-alert danger" role="alert">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-            <div style="flex:1;">
-                <ul style="margin:0; padding-left:16px;">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        </div>
-    @endif
+    <!-- Global toasts handle messages now -->
 
     <!-- Page Header -->
     <div class="pf-header">
@@ -391,6 +378,51 @@
                                 </div>
                                 <p class="pf-hint">Include landmark, city, and pincode so customers can easily navigate to your center.</p>
                             </div>
+
+                            <div class="pf-divider">Automated WhatsApp Settings</div>
+
+                            <div class="pf-form-grid">
+                                <div class="pf-form-group">
+                                    <label for="whatsapp_language">WhatsApp Language <span class="pf-req">*</span></label>
+                                    <div class="pf-input-wrap">
+                                        <select id="whatsapp_language" name="whatsapp_language" style="width: 100%; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; font-size: 13.5px; font-weight: 500; color: var(--text); outline: none;">
+                                            <option value="en" {{ old('whatsapp_language', $user->whatsapp_language) === 'en' ? 'selected' : '' }}>English</option>
+                                            <option value="guj" {{ old('whatsapp_language', $user->whatsapp_language) === 'guj' ? 'selected' : '' }}>Gujarati (ગુજરાતી)</option>
+                                        </select>
+                                    </div>
+                                    <p class="pf-hint">Language used for automated and manual reminders.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="pf-form-group">
+                                <label>Automated WhatsApp Reminders (Cron)</label>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px;">
+                                    @php $selectedDays = old('auto_reminder_days', $user->auto_reminder_days ?? []); @endphp
+                                    <label class="pf-pill-checkbox">
+                                        <input type="checkbox" name="auto_reminder_days[]" value="30" {{ in_array('30', $selectedDays) ? 'checked' : '' }}>
+                                        <span>30 days before</span>
+                                    </label>
+                                    <label class="pf-pill-checkbox">
+                                        <input type="checkbox" name="auto_reminder_days[]" value="15" {{ in_array('15', $selectedDays) ? 'checked' : '' }}>
+                                        <span>15 days before</span>
+                                    </label>
+                                    <label class="pf-pill-checkbox">
+                                        <input type="checkbox" name="auto_reminder_days[]" value="7" {{ in_array('7', $selectedDays) ? 'checked' : '' }}>
+                                        <span>7 days before</span>
+                                    </label>
+                                    <label class="pf-pill-checkbox">
+                                        <input type="checkbox" name="auto_reminder_days[]" value="3" {{ in_array('3', $selectedDays) ? 'checked' : '' }}>
+                                        <span>3 days before</span>
+                                    </label>
+                                    <label class="pf-pill-checkbox">
+                                        <input type="checkbox" name="auto_reminder_days[]" value="1" {{ in_array('1', $selectedDays) ? 'checked' : '' }}>
+                                        <span>1 day before</span>
+                                    </label>
+                                </div>
+                                <p class="pf-hint" style="color: #0369A1;">Select when automated reminders should be sent. Leave all unchecked to disable auto-reminders. Ensure you have sufficient WhatsApp limits.</p>
+                            </div>
+
+                            <div class="pf-divider">Security Details</div>
 
                             <div class="pf-form-group">
                                 <label for="pf_mobile_display">Mobile Number</label>
@@ -527,14 +559,20 @@
                         </div>
                     </div>
 
-                    <div class="pf-stats-grid">
-                        <div class="pf-stat">
-                            <div class="pf-stat-val">{{ $totalRecords }}</div>
-                            <div class="pf-stat-lbl">Total Records</div>
+                    <div class="psh-kpis" style="margin-top: 24px; margin-bottom: 24px;">
+                        <div class="psh-kpi-card is-primary">
+                            <div class="psh-kpi-top" style="margin-bottom: 10px;">
+                                <div class="psh-kpi-icon" style="width: 36px; height: 36px;"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/></svg></div>
+                                <div class="psh-kpi-label">Total Records</div>
+                            </div>
+                            <div class="psh-kpi-value" style="font-size: 26px; margin-bottom: 0;">{{ $totalRecords }}</div>
                         </div>
-                        <div class="pf-stat">
-                            <div class="pf-stat-val">{{ $activeRecords }}</div>
-                            <div class="pf-stat-lbl">Active Records</div>
+                        <div class="psh-kpi-card is-success">
+                            <div class="psh-kpi-top" style="margin-bottom: 10px;">
+                                <div class="psh-kpi-icon" style="width: 36px; height: 36px;"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+                                <div class="psh-kpi-label">Active Records</div>
+                            </div>
+                            <div class="psh-kpi-value" style="font-size: 26px; margin-bottom: 0;">{{ $activeRecords }}</div>
                         </div>
                     </div>
 

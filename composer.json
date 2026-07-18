@@ -10,6 +10,7 @@
         "filament/filament": "^4.12",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
+        "leandrocfe/filament-apex-charts": "*",
         "livewire/livewire": "^3.6.4",
         "livewire/volt": "^1.7.0"
     },

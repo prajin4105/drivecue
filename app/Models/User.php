@@ -25,6 +25,7 @@ class User extends Authenticatable implements FilamentUser
         'first_name', 'last_name', 'center_name', 'center_address', 'mobile',
         'password', 'role', 'mobile_verified',
         'whatsapp_message_template', 'status', 'profile_image',
+        'whatsapp_language', 'auto_reminder_days',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -32,6 +33,7 @@ class User extends Authenticatable implements FilamentUser
     protected $casts = [
         'mobile_verified' => 'boolean',
         'password' => 'hashed',
+        'auto_reminder_days' => 'array',
     ];
 
     // Accessor for name attribute (needed for Filament and packages)
@@ -43,7 +45,12 @@ class User extends Authenticatable implements FilamentUser
     // Accessor for email attribute (fallback for packages expecting email)
     public function getEmailAttribute(): string
     {
-        return $this->mobile . '@drivecue.com';
+        // If there is a real email column (unlikely in this schema), return it.
+        if (array_key_exists('email', $this->attributes) && !empty($this->attributes['email'])) {
+            return $this->attributes['email'];
+        }
+        // Otherwise, return empty to avoid dummy placeholder emails.
+        return '';
     }
 
     // Helper methods for role checks

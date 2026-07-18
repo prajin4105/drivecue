@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
         );
 
         // 2. Create Test Center Owner
-        User::updateOrCreate(
+        $owner = User::updateOrCreate(
             ['mobile' => '8888888888'],
             [
                 'first_name' => 'Test',
@@ -42,19 +42,23 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Seed some vehicle records for the test owner
+        \App\Models\VehicleRecord::factory(100)->create([
+            'user_id' => $owner->id
+        ]);
+
         // 3. Create Plans
         Plan::updateOrCreate(
             ['slug' => 'trial'],
             [
                 'name' => 'Free Trial',
-                'description' => 'Try all premium features for 30 days.',
+                'description' => 'Try Drive Cue free for one month with 100 WhatsApp renewal reminders.',
                 'is_trial' => true,
                 'is_popular' => false,
                 'sort_order' => 1,
                 'monthly_price' => 0.00,
                 'yearly_price' => 0.00,
                 'customer_limit' => 100,
-                'sms_limit' => 100,
                 'whatsapp_limit' => 100,
                 'status' => 'active',
             ]
@@ -71,7 +75,6 @@ class DatabaseSeeder extends Seeder
                 'monthly_price' => 299.00,
                 'yearly_price' => 2999.00,
                 'customer_limit' => 500,
-                'sms_limit' => 1000,
                 'whatsapp_limit' => 1000,
                 'status' => 'active',
             ]
@@ -88,7 +91,6 @@ class DatabaseSeeder extends Seeder
                 'monthly_price' => 599.00,
                 'yearly_price' => 5999.00,
                 'customer_limit' => 1500,
-                'sms_limit' => 3500,
                 'whatsapp_limit' => 3500,
                 'status' => 'active',
             ]
@@ -105,8 +107,7 @@ class DatabaseSeeder extends Seeder
                 'monthly_price' => 1199.00,
                 'yearly_price' => 11999.00,
                 'customer_limit' => 999999,
-                'sms_limit' => 10000,
-                'whatsapp_limit' => 10000,
+                'whatsapp_limit' => 0,
                 'status' => 'active',
             ]
         );

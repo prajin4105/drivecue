@@ -19,11 +19,18 @@ new #[Layout('layouts.app')] class extends Component
         $this->form->authenticate();
 
         Session::regenerate();
+        session()->flash('success', 'Logged in successfully!');
 
         $user = auth()->user();
         if ($user) {
-            $redirectUrl = $user->isSuperAdmin() ? url('admin') : route('dashboard', absolute: false);
-            $this->redirectIntended(default: $redirectUrl, navigate: true);
+            // Super admins must always land in Filament. redirectIntended() can otherwise
+            // reuse an earlier dashboard URL stored in the session.
+            if ($user->isSuperAdmin()) {
+                $this->redirect(url('admin'), navigate: false);
+                return;
+            }
+
+            $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
         }
     }
 }; ?>

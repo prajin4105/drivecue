@@ -51,6 +51,9 @@ class ProfileController extends Controller
             'center_name' => ['required', 'string', 'max:180'],
             'center_address' => ['required', 'string', 'max:500'],
             'profile_image' => ['nullable', 'image', 'max:2048'], // 2MB Max
+            'whatsapp_language' => ['nullable', 'string', 'in:en,guj'],
+            'auto_reminder_days' => ['nullable', 'array'],
+            'auto_reminder_days.*' => ['integer', 'in:1,3,7,15,30'],
         ]);
 
         $data = [
@@ -58,6 +61,8 @@ class ProfileController extends Controller
             'last_name' => $request->input('last_name'),
             'center_name' => $request->input('center_name'),
             'center_address' => $request->input('center_address'),
+            'whatsapp_language' => $request->input('whatsapp_language', 'en'),
+            'auto_reminder_days' => $request->input('auto_reminder_days', []),
         ];
 
         if ($request->hasFile('profile_image')) {

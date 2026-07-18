@@ -9,6 +9,7 @@ body { background:#FFFFFF; }
 #hp *, #hp *::before, #hp *::after { box-sizing:border-box; }
 #hp { font-family:'Inter',ui-sans-serif,sans-serif; color:#0B1020; background:#FFFFFF; }
 
+
 /* ─── HERO ─── */
 #hp .hero-section {
     position:relative; overflow:hidden;
