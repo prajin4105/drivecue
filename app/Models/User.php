@@ -45,12 +45,7 @@ class User extends Authenticatable implements FilamentUser
     // Accessor for email attribute (fallback for packages expecting email)
     public function getEmailAttribute(): string
     {
-        // If there is a real email column (unlikely in this schema), return it.
-        if (array_key_exists('email', $this->attributes) && !empty($this->attributes['email'])) {
-            return $this->attributes['email'];
-        }
-        // Otherwise, return empty to avoid dummy placeholder emails.
-        return '';
+        return $this->mobile . '@drivecue.com';
     }
 
     // Helper methods for role checks
